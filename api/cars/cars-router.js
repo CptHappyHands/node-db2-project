@@ -20,8 +20,9 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', checkCarId, async (req, res, next) => {
     try {
-        const data = await Car.getById(req.params.id)
-        res.json(data)
+        // const data = await Car.getById(req.params.id)
+        res.json(req.car)
+        next()
     } catch (err) {
         next(err)
     }
@@ -30,7 +31,8 @@ router.get('/:id', checkCarId, async (req, res, next) => {
 router.post('/', checkCarPayload, checkVinNumberUnique, checkVinNumberValid, async (req, res, next) => {
     try {
         const newCar = await Car.create(req.body)
-        res.status(201).json(newCar)
+        res.json(newCar)
+        next()
     } catch (err) {
         next(err)
     }
