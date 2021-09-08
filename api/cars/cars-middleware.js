@@ -6,7 +6,7 @@ async function checkCarId(req, res, next) {
   try {
     const car = await Car.getById(req.params.id)
     if(!car) {
-      next({status: 404, message: `car with id ${car.id} is not found` })
+      next({status: 404, message: `car with id ${req.params.id} is not found` })
     } else {
       req.car = car
       next()
@@ -35,25 +35,31 @@ const checkCarPayload = (req, res, next) => {
     message: `mileage is missing`
   })
 } else {
-  req.body.vin = vin;
   next()
 }
 }
 
-async function checkVinNumberValid(req, res, next) {
-  const { vin } = req.body
-  try {
-    const vinNumber = await vinValidator.validate(vin)
-    if(vinNumber === false ) {
-      res.status(400).json({
-        message: `vin ${vin} is invalid`
-      })
-    } else {
-      req.body.vin = vin
-    }
-  } catch (err) {
-    next(err)
-  }
+// async function checkVinNumberValid(req, res, next) {
+//   // const { vin } = req.body
+//   try {
+//     const vinNumber = await vinValidator.validate(req.body.vin)
+//     if(vinNumber === false ) {
+//       res.status(400).json({
+//         message: `vin ${req.body.vin} is invalid`
+//       })
+//     } else {
+//       req.body.vin = vinNumber
+//       next()
+//     }
+//   } catch (err) {
+//     next(err)
+//   }
+// }
+
+const checkVinNumberValid = async (req, res, next) => {
+  if (vinValidator.validate(req.body.vin)) { 
+    next() 
+  } else { next({status: 400, message: `vin ${req.body.vin} is invalid`}) }
 }
 
 async function checkVinNumberUnique(req, res, next) {
@@ -61,7 +67,7 @@ async function checkVinNumberUnique(req, res, next) {
     const vinNumber = await db('cars')
     .where("vin", req.body.vin).first()
     if (vinNumber) {
-      next({ status: 400, message: `vin ${vinNumber} already exists` })
+      next({ status: 400, message: `vin ${req.body.vin} already exists` })
     } else {
       next()
     }
